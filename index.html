@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formcatch — Spam filter for contact forms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #10201C;
+    --ink-2: #16281F;
+    --paper: #F4EFE3;
+    --paper-dim: #E8E1D0;
+    --line: #2B4038;
+    --line-soft: rgba(244,239,227,0.12);
+    --text: #EDEFE9;
+    --text-dim: #9CB0A6;
+    --text-ink: #16281F;
+    --text-ink-dim: #5C6F64;
+    --green: #3DFFB0;
+    --amber: #FFB020;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--ink);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+  }
+
+  a { color: inherit; }
+
+  .wrap {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* NAV */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 32px;
+    max-width: 1160px;
+    margin: 0 auto;
+  }
+  .logo {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-mark {
+    width: 10px; height: 10px;
+    background: var(--green);
+    border-radius: 2px;
+    display: inline-block;
+  }
+  .nav-links { display: flex; gap: 32px; font-size: 14px; color: var(--text-dim); }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    background: var(--paper);
+    color: var(--text-ink);
+    padding: 9px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 64px 0 96px;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 56px;
+    align-items: center;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--green);
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-size: 46px;
+    line-height: 1.08;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 22px;
+  }
+  h1 em {
+    font-style: normal;
+    color: var(--text-dim);
+  }
+  .hero p.lede {
+    font-size: 17px;
+    color: var(--text-dim);
+    max-width: 460px;
+    margin-bottom: 32px;
+  }
+  .hero-actions { display: flex; gap: 12px; align-items: center; margin-bottom: 28px; }
+  .btn-primary {
+    background: var(--green);
+    color: #08150F;
+    padding: 13px 22px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+    display: inline-block;
+    transition: transform 0.15s ease;
+  }
+  .btn-primary:hover { transform: translateY(-1px); }
+  .btn-secondary {
+    color: var(--text-dim);
+    font-size: 14px;
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 2px;
+  }
+  .hero-note { font-size: 13px; color: var(--text-dim); font-family: var(--font-mono); }
+
+  /* TERMINAL — signature element */
+  .terminal {
+    background: #0A140F;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px -20px rgba(0,0,0,0.6);
+  }
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(255,255,255,0.02);
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #3A4A42; }
+  .terminal-title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-left: 6px;
+  }
+  .terminal-body {
+    padding: 18px 16px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    height: 340px;
+    overflow: hidden;
+    position: relative;
+  }
+  .log-line {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    opacity: 0;
+    animation: fadeIn 0.4s ease forwards;
+    border-bottom: 1px dashed var(--line-soft);
+  }
+  .log-time { color: #506357; flex-shrink: 0; }
+  .log-status { flex-shrink: 0; font-weight: 500; }
+  .log-status.pass { color: var(--green); }
+  .log-status.catch { color: var(--amber); }
+  .log-detail { color: #8FA398; }
+  .log-detail .reason { color: var(--text); }
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  /* HOW IT WORKS */
+  .section { padding: 88px 0; }
+  .section-head { max-width: 560px; margin-bottom: 56px; }
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--green);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+  }
+  h2 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    margin-bottom: 14px;
+  }
+  .section-head p { color: var(--text-dim); font-size: 15.5px; }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .step {
+    background: var(--ink-2);
+    padding: 32px 28px;
+  }
+  .step-num {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--green);
+    margin-bottom: 20px;
+  }
+  .step h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .step p { color: var(--text-dim); font-size: 14px; }
+
+  /* CODE SNIPPET */
+  .install {
+    background: var(--paper);
+    border-radius: 14px;
+    padding: 44px;
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 40px;
+    align-items: center;
+  }
+  .install-copy h2 { color: var(--text-ink); }
+  .install-copy p { color: var(--text-ink-dim); font-size: 15px; margin-bottom: 0; }
+  .code-block {
+    background: #16281F;
+    border-radius: 8px;
+    padding: 20px 22px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #C9D9CF;
+    overflow-x: auto;
+  }
+  .code-block .tag { color: #7FA396; }
+  .code-block .str { color: var(--green); }
+  .code-block .com { color: #4E6558; }
+
+  /* PRICING */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .plan {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+  }
+  .plan.featured {
+    border-color: var(--green);
+    background: rgba(61,255,176,0.04);
+  }
+  .plan-name { font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); margin-bottom: 16px; }
+  .plan-price {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .plan-price span { font-size: 14px; color: var(--text-dim); font-weight: 400; }
+  .plan-desc { font-size: 13px; color: var(--text-dim); margin-bottom: 24px; }
+  .plan-features { list-style: none; font-size: 13.5px; color: var(--text); flex-grow: 1; }
+  .plan-features li { padding: 7px 0; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; }
+  .plan-features li:first-child { border-top: none; }
+  .plan-features li::before { content: '—'; color: var(--text-dim); }
+  .plan-cta {
+    margin-top: 24px;
+    text-align: center;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid var(--line);
+    color: var(--text);
+  }
+  .plan.featured .plan-cta { background: var(--green); color: #08150F; border: none; }
+
+  footer {
+    border-top: 1px solid var(--line-soft);
+    padding: 40px 0 48px;
+    text-align: center;
+  }
+  footer p { color: var(--text-dim); font-size: 13px; font-family: var(--font-mono); }
+
+  @media (max-width: 860px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; }
+    .install { grid-template-columns: 1fr; padding: 28px; }
+    .pricing-grid { grid-template-columns: 1fr 1fr; }
+    h1 { font-size: 34px; }
+    nav { flex-wrap: wrap; gap: 16px; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><span class="logo-mark"></span>Formcatch</div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#install">Install</a>
+    <a href="#pricing">Pricing</a>
+  </div>
+  <a href="#pricing" class="nav-cta">Get started</a>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">Live on 40,000+ forms</div>
+      <h1>Stop reading spam.<br><em>Keep reading customers.</em></h1>
+      <p class="lede">Formcatch sits in front of any contact form and filters out bots before they reach your inbox. No CAPTCHA, no friction for real people — just three quiet checks that catch almost everything.</p>
+      <div class="hero-actions">
+        <a href="#install" class="btn-primary">Add to your site free</a>
+        <a href="#how" class="btn-secondary">See how it works</a>
+      </div>
+      <div class="hero-note">One script tag. No account required to try it.</div>
+    </div>
+
+    <div class="terminal">
+      <div class="terminal-bar">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="terminal-title">formcatch — live filter log</span>
+      </div>
+      <div class="terminal-body" id="log"></div>
+    </div>
+  </div>
+</header>
+
+<section class="section" id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-label">How it works</div>
+      <h2>Three checks. No CAPTCHA. No API calls a user can see.</h2>
+      <p>Each one catches a different kind of bot, and they run in order — cheapest first, so most spam never gets past step one.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01 — Honeypot field</div>
+        <h3>A field bots can't resist</h3>
+        <p>An invisible input is added to your form. Real visitors never see it or fill it in. Bots that auto-fill every field trip it instantly.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02 — Timing check</div>
+        <h3>Humans take longer than 400ms</h3>
+        <p>Formcatch times the gap between page load and form submit. Scripted submissions happen in milliseconds — no person types that fast.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03 — Rate limiting</div>
+        <h3>One submission per visitor, per window</h3>
+        <p>Repeated bursts from the same source get throttled automatically, stopping the flood before it starts.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="install">
+  <div class="wrap">
+    <div class="install">
+      <div class="install-copy">
+        <h2>Live in under two minutes</h2>
+        <p>Drop one script tag before your closing &lt;/body&gt; and add one attribute to your form. That's the entire integration — no backend changes, no dashboard setup required to start.</p>
+      </div>
+      <div class="code-block">
+<span class="com">&lt;!-- 1. Add before &lt;/body&gt; --&gt;</span><br>
+&lt;<span class="tag">script</span> src=<span class="str">"https://cdn.formcatch.dev/v1.js"</span> data-site=<span class="str">"your-site-id"</span>&gt;&lt;/<span class="tag">script</span>&gt;<br><br>
+<span class="com">&lt;!-- 2. Mark your existing form --&gt;</span><br>
+&lt;<span class="tag">form</span> data-formcatch <span class="tag">action</span>=<span class="str">"/submit"</span>&gt;<br>
+&nbsp;&nbsp;...<br>
+&lt;/<span class="tag">form</span>&gt;
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="pricing">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-label">Pricing</div>
+      <h2>Free to try. Cheap to keep.</h2>
+      <p>Priced per site, not per submission — spam volume shouldn't be what determines your bill.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="plan">
+        <div class="plan-name">FREE</div>
+        <div class="plan-price">$0</div>
+        <div class="plan-desc">One site, forever</div>
+        <ul class="plan-features">
+          <li>Up to 200 submissions/mo</li>
+          <li>All 3 filter checks</li>
+          <li>Email support</li>
+        </ul>
+        <a href="#" class="plan-cta">Start free</a>
+      </div>
+      <div class="plan featured">
+        <div class="plan-name">STARTER</div>
+        <div class="plan-price">$9<span>/mo</span></div>
+        <div class="plan-desc">1 site, unlimited volume</div>
+        <ul class="plan-features">
+          <li>Unlimited submissions</li>
+          <li>Spam log dashboard</li>
+          <li>Email alerts</li>
+        </ul>
+        <a href="#" class="plan-cta">Choose Starter</a>
+      </div>
+      <div class="plan">
+        <div class="plan-name">TEAM</div>
+        <div class="plan-price">$29<span>/mo</span></div>
+        <div class="plan-desc">5 sites</div>
+        <ul class="plan-features">
+          <li>Everything in Starter</li>
+          <li>Slack notifications</li>
+          <li>Custom rules</li>
+        </ul>
+        <a href="#" class="plan-cta">Choose Team</a>
+      </div>
+      <div class="plan">
+        <div class="plan-name">AGENCY</div>
+        <div class="plan-price">$79<span>/mo</span></div>
+        <div class="plan-desc">25 client sites</div>
+        <ul class="plan-features">
+          <li>Everything in Team</li>
+          <li>White-label reports</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="#" class="plan-cta">Choose Agency</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>formcatch — a quiet filter for a loud inbox</p>
+</footer>
+
+<script>
+  const events = [
+    { status: 'pass', detail: 'contact@brightlane.co — submitted in 4.2s' },
+    { status: 'catch', reason: 'honeypot triggered', detail: 'bot field filled — blocked' },
+    { status: 'pass', detail: 'j.martinez@gmail.com — submitted in 6.8s' },
+    { status: 'catch', reason: 'timing anomaly', detail: 'submitted in 0.09s — blocked' },
+    { status: 'pass', detail: 'hello@stackworks.io — submitted in 3.1s' },
+    { status: 'catch', reason: 'rate limited', detail: '4th submission in 2min — blocked' },
+    { status: 'pass', detail: 'priya.k@outlook.com — submitted in 9.4s' },
+    { status: 'catch', reason: 'honeypot triggered', detail: 'bot field filled — blocked' },
+  ];
+
+  const logEl = document.getElementById('log');
+  let i = 0;
+
+  function tick() {
+    const e = events[i % events.length];
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    const now = new Date();
+    const time = now.toTimeString().slice(0,8);
+    if (e.status === 'pass') {
+      line.innerHTML = `<span class="log-time">${time}</span><span class="log-status pass">PASS</span><span class="log-detail">${e.detail}</span>`;
+    } else {
+      line.innerHTML = `<span class="log-time">${time}</span><span class="log-status catch">CAUGHT</span><span class="log-detail"><span class="reason">${e.reason}</span> — ${e.detail}</span>`;
+    }
+    logEl.appendChild(line);
+    if (logEl.children.length > 11) logEl.removeChild(logEl.firstChild);
+    logEl.scrollTop = logEl.scrollHeight;
+    i++;
+  }
+
+  for (let j = 0; j < 7; j++) tick();
+  setInterval(tick, 2200);
+</script>
+
+</body>
+</html>
