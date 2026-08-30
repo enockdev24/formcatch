@@ -1,0 +1,310 @@
+/**
+ * Formcatch Design System v1
+ * ---------------------------------------------------------------
+ * A CSS-only component library — no build step, no framework.
+ * Every "component" here is a documented HTML pattern + class names,
+ * meant to be copy-pasted. Think of each class group below as one
+ * component's "API": the modifier classes are its props.
+ *
+ * Sections:
+ *   1. Design tokens (colors, type, spacing, radius, shadow)
+ *   2. Button
+ *   3. Badge
+ *   4. Card
+ *   5. Form field (input, label, error state)
+ *   6. Alert
+ *   7. Skeleton (loading state)
+ *   8. Empty state
+ *   9. Accessibility utilities
+ *
+ * See style-guide.html for live examples and usage notes.
+ */
+
+/* ============================================================
+   1. DESIGN TOKENS
+   ============================================================ */
+:root {
+  /* Color */
+  --fc-bg: #EEF1EF;
+  --fc-panel: #FFFFFF;
+  --fc-ink: #1B2B2E;
+  --fc-ink-soft: #5B6B6C;
+  --fc-ink-faint: #8A9998;
+  --fc-line: #D4DBD9;
+  --fc-line-strong: #B7C2C0;
+  --fc-teal: #1F7A6C;
+  --fc-teal-dark: #175E53;
+  --fc-teal-soft: #E4F0EC;
+  --fc-amber: #C97A2B;
+  --fc-amber-soft: #F6E9DB;
+  --fc-red: #B3402F;
+  --fc-red-soft: #F7E5E1;
+
+  /* Type */
+  --fc-font-display: 'Archivo Expanded', sans-serif;
+  --fc-font-body: 'Inter', sans-serif;
+  --fc-font-mono: 'Space Mono', monospace;
+
+  /* Spacing scale (4px base) */
+  --fc-space-1: 4px;
+  --fc-space-2: 8px;
+  --fc-space-3: 12px;
+  --fc-space-4: 16px;
+  --fc-space-5: 20px;
+  --fc-space-6: 24px;
+  --fc-space-8: 32px;
+  --fc-space-10: 40px;
+
+  /* Radius */
+  --fc-radius-sm: 5px;
+  --fc-radius-md: 8px;
+  --fc-radius-lg: 12px;
+
+  /* Shadow */
+  --fc-shadow-sm: 0 1px 2px rgba(27,43,46,0.06);
+  --fc-shadow-md: 0 12px 28px -16px rgba(27,43,46,0.28);
+
+  /* Focus ring — shared by every interactive element */
+  --fc-focus-ring: 0 0 0 3px rgba(31,122,108,0.35);
+}
+
+/* ============================================================
+   2. BUTTON
+   ============================================================
+   Usage:
+     <button class="fc-btn fc-btn--primary">Label</button>
+     <a class="fc-btn fc-btn--secondary" href="#">Label</a>
+
+   Modifiers (the "props"):
+     Variant  : fc-btn--primary | fc-btn--secondary | fc-btn--ghost
+     Size     : fc-btn--sm | (default) | fc-btn--lg
+     State    : disabled attribute | fc-btn--loading (shows spinner,
+                keeps label for screen readers via aria-busy)
+*/
+.fc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--fc-space-2);
+  font-family: var(--fc-font-body);
+  font-weight: 600;
+  font-size: 14.5px;
+  line-height: 1;
+  padding: 13px 22px;
+  border-radius: var(--fc-radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.fc-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--fc-focus-ring);
+}
+.fc-btn:active { transform: translateY(1px); }
+.fc-btn:disabled,
+.fc-btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.fc-btn--primary {
+  background: var(--fc-teal);
+  color: #F2FBF8;
+}
+.fc-btn--primary:hover { background: var(--fc-teal-dark); }
+
+.fc-btn--secondary {
+  background: var(--fc-panel);
+  color: var(--fc-ink);
+  border-color: var(--fc-line-strong);
+}
+.fc-btn--secondary:hover { border-color: var(--fc-ink-soft); }
+
+.fc-btn--ghost {
+  background: transparent;
+  color: var(--fc-ink-soft);
+  padding-left: 4px;
+  padding-right: 4px;
+  border-bottom: 1px solid var(--fc-line-strong);
+  border-radius: 0;
+}
+.fc-btn--ghost:hover { color: var(--fc-ink); border-color: var(--fc-ink-soft); }
+
+.fc-btn--sm { padding: 8px 14px; font-size: 13px; }
+.fc-btn--lg { padding: 16px 28px; font-size: 15.5px; }
+
+.fc-btn--loading { pointer-events: none; opacity: 0.75; }
+.fc-btn__spinner {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  animation: fc-spin 0.7s linear infinite;
+}
+@keyframes fc-spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   3. BADGE
+   ============================================================
+   Usage: <span class="fc-badge fc-badge--teal">CHECK 1</span>
+   Modifiers: fc-badge--teal | fc-badge--amber | fc-badge--red | fc-badge--neutral
+*/
+.fc-badge {
+  display: inline-block;
+  font-family: var(--fc-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  border-radius: 4px;
+  line-height: 1.4;
+}
+.fc-badge--teal   { color: var(--fc-teal-dark); background: var(--fc-teal-soft); }
+.fc-badge--amber  { color: #8A5A1E; background: var(--fc-amber-soft); }
+.fc-badge--red    { color: var(--fc-red); background: var(--fc-red-soft); }
+.fc-badge--neutral{ color: var(--fc-ink-soft); background: var(--fc-line); }
+
+/* ============================================================
+   4. CARD
+   ============================================================
+   Usage:
+     <div class="fc-card">...</div>
+     <div class="fc-card fc-card--featured">...</div>
+     <div class="fc-card fc-card--interactive" tabindex="0">...</div>
+*/
+.fc-card {
+  background: var(--fc-panel);
+  border: 1px solid var(--fc-line);
+  border-radius: var(--fc-radius-lg);
+  padding: var(--fc-space-6);
+}
+.fc-card--featured {
+  border-color: var(--fc-teal);
+  box-shadow: 0 0 0 1px var(--fc-teal);
+}
+.fc-card--interactive { transition: box-shadow 0.15s ease, transform 0.15s ease; }
+.fc-card--interactive:hover { box-shadow: var(--fc-shadow-md); transform: translateY(-1px); }
+.fc-card--interactive:focus-visible { outline: none; box-shadow: var(--fc-focus-ring); }
+
+/* ============================================================
+   5. FORM FIELD
+   ============================================================
+   Usage:
+     <div class="fc-field">
+       <label class="fc-field__label" for="email">Email</label>
+       <input class="fc-field__input" id="email" type="email">
+       <p class="fc-field__hint">We'll only use this to contact you.</p>
+     </div>
+
+     Error state — add fc-field--error to the wrapper and an
+     fc-field__error paragraph with role="alert":
+     <div class="fc-field fc-field--error">
+       <label class="fc-field__label" for="email">Email</label>
+       <input class="fc-field__input" id="email" type="email"
+              aria-invalid="true" aria-describedby="email-err">
+       <p class="fc-field__error" id="email-err" role="alert">
+         Enter a valid email address.
+       </p>
+     </div>
+*/
+.fc-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--fc-space-5); }
+.fc-field__label {
+  font-family: var(--fc-font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--fc-ink);
+}
+.fc-field__input {
+  font-family: var(--fc-font-body);
+  font-size: 14.5px;
+  padding: 11px 14px;
+  border: 1px solid var(--fc-line-strong);
+  border-radius: var(--fc-radius-sm);
+  background: var(--fc-panel);
+  color: var(--fc-ink);
+}
+.fc-field__input:focus-visible {
+  outline: none;
+  border-color: var(--fc-teal);
+  box-shadow: var(--fc-focus-ring);
+}
+.fc-field__hint { font-size: 12.5px; color: var(--fc-ink-faint); }
+.fc-field--error .fc-field__input { border-color: var(--fc-red); }
+.fc-field__error { font-size: 12.5px; color: var(--fc-red); font-weight: 500; }
+
+/* ============================================================
+   6. ALERT
+   ============================================================
+   Usage: <div class="fc-alert fc-alert--success" role="status">...</div>
+   Modifiers: fc-alert--success | fc-alert--error | fc-alert--info
+   Use role="status" for non-urgent updates, role="alert" for errors
+   that need immediate announcement to screen readers.
+*/
+.fc-alert {
+  display: flex;
+  gap: var(--fc-space-3);
+  padding: var(--fc-space-4) var(--fc-space-5);
+  border-radius: var(--fc-radius-md);
+  font-size: 14px;
+  border: 1px solid transparent;
+}
+.fc-alert--success { background: var(--fc-teal-soft); color: var(--fc-teal-dark); border-color: rgba(31,122,108,0.25); }
+.fc-alert--error    { background: var(--fc-red-soft); color: var(--fc-red); border-color: rgba(179,64,47,0.25); }
+.fc-alert--info      { background: var(--fc-line); color: var(--fc-ink-soft); }
+
+/* ============================================================
+   7. SKELETON (loading state)
+   ============================================================
+   Usage: <div class="fc-skeleton" style="width:120px;height:16px;"></div>
+   Always pair with aria-busy="true" and a visually-hidden "Loading…"
+   text on the containing region for screen readers.
+*/
+.fc-skeleton {
+  background: linear-gradient(90deg, var(--fc-line) 25%, #E5EAE8 37%, var(--fc-line) 63%);
+  background-size: 400% 100%;
+  border-radius: var(--fc-radius-sm);
+  animation: fc-shimmer 1.4s ease infinite;
+}
+@keyframes fc-shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fc-skeleton { animation: none; opacity: 0.6; }
+}
+
+/* ============================================================
+   8. EMPTY STATE
+   ============================================================
+   Usage:
+     <div class="fc-empty">
+       <p class="fc-empty__title">No submissions yet</p>
+       <p class="fc-empty__body">Once your form is live, activity shows up here.</p>
+     </div>
+*/
+.fc-empty {
+  text-align: center;
+  padding: var(--fc-space-8) var(--fc-space-4);
+  color: var(--fc-ink-soft);
+}
+.fc-empty__title { font-weight: 600; color: var(--fc-ink); margin-bottom: 4px; font-size: 14.5px; }
+.fc-empty__body { font-size: 13.5px; }
+
+/* ============================================================
+   9. ACCESSIBILITY UTILITIES
+   ============================================================ */
+.fc-sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-btn, .fc-card--interactive { transition: none; }
+}

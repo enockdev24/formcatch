@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formcatch — Component Style Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="components.css">
+<style>
+  body { background: var(--fc-bg); color: var(--fc-ink); font-family: var(--fc-font-body); margin: 0; padding: 48px 32px 120px; line-height: 1.6; }
+  .sg-wrap { max-width: 880px; margin: 0 auto; }
+  h1 { font-family: var(--fc-font-display); font-size: 32px; margin-bottom: 8px; }
+  .sg-intro { color: var(--fc-ink-soft); font-size: 15px; max-width: 560px; margin-bottom: 56px; }
+  h2 { font-family: var(--fc-font-display); font-size: 20px; margin: 0 0 6px; padding-top: 56px; border-top: 1px solid var(--fc-line); }
+  .sg-section:first-of-type h2 { border-top: none; padding-top: 0; }
+  .sg-desc { color: var(--fc-ink-soft); font-size: 14px; margin-bottom: 20px; max-width: 560px; }
+  .sg-demo {
+    background: var(--fc-panel);
+    border: 1px solid var(--fc-line);
+    border-radius: 10px;
+    padding: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .sg-code {
+    background: var(--fc-ink);
+    color: #DCE7E3;
+    font-family: var(--fc-font-mono);
+    font-size: 12px;
+    line-height: 1.7;
+    padding: 16px 18px;
+    border-radius: 8px;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .sg-note {
+    font-size: 12.5px;
+    color: var(--fc-ink-faint);
+    margin-top: 10px;
+  }
+  .sg-note strong { color: var(--fc-ink-soft); }
+</style>
+</head>
+<body>
+<div class="sg-wrap">
+
+  <h1>Formcatch Component Library</h1>
+  <p class="sg-intro">Every component on the live site comes from this file. Copy the HTML shown under each one — that's the full "API": no build step, no JavaScript framework, just documented classes. Load <code>components.css</code> once per page to use any of them.</p>
+
+  <div class="sg-section">
+    <h2>Button</h2>
+    <p class="sg-desc">Three variants, two extra sizes, a disabled state, and a loading state that keeps the accessible label intact.</p>
+    <div class="sg-demo">
+      <button class="fc-btn fc-btn--primary">Primary</button>
+      <button class="fc-btn fc-btn--secondary">Secondary</button>
+      <a href="#" class="fc-btn fc-btn--ghost">Ghost link</a>
+      <button class="fc-btn fc-btn--primary" disabled>Disabled</button>
+      <button class="fc-btn fc-btn--primary fc-btn--loading" aria-busy="true">
+        <span class="fc-btn__spinner" aria-hidden="true"></span> Saving…
+      </button>
+    </div>
+    <div class="sg-code">&lt;button class="fc-btn fc-btn--primary"&gt;Primary&lt;/button&gt;
+&lt;a href="#" class="fc-btn fc-btn--ghost"&gt;Ghost link&lt;/a&gt;
+&lt;button class="fc-btn fc-btn--primary" disabled&gt;Disabled&lt;/button&gt;
+
+&lt;!-- Loading state: disable interaction with aria-busy,
+     keep a real label for screen reader users --&gt;
+&lt;button class="fc-btn fc-btn--primary fc-btn--loading" aria-busy="true"&gt;
+  &lt;span class="fc-btn__spinner" aria-hidden="true"&gt;&lt;/span&gt; Saving…
+&lt;/button&gt;</div>
+    <p class="sg-note"><strong>Accessibility:</strong> focus ring uses <code>:focus-visible</code> so it only shows for keyboard users, not mouse clicks. Never remove it — it's the only way keyboard users see what's selected.</p>
+  </div>
+
+  <div class="sg-section">
+    <h2>Badge</h2>
+    <p class="sg-desc">Small status labels. Color communicates meaning — keep teal for positive/pass, amber for caution, red for errors, neutral for anything else.</p>
+    <div class="sg-demo">
+      <span class="fc-badge fc-badge--teal">PASS</span>
+      <span class="fc-badge fc-badge--amber">CAUGHT</span>
+      <span class="fc-badge fc-badge--red">ERROR</span>
+      <span class="fc-badge fc-badge--neutral">CHECK 1</span>
+    </div>
+    <div class="sg-code">&lt;span class="fc-badge fc-badge--teal"&gt;PASS&lt;/span&gt;</div>
+  </div>
+
+  <div class="sg-section">
+    <h2>Card</h2>
+    <p class="sg-desc">The base surface for grouped content. Add <code>--featured</code> to highlight one option among several (e.g. a recommended pricing tier). Add <code>--interactive</code> only if the whole card is clickable — it adds hover/focus affordance, so don't use it on static cards.</p>
+    <div class="sg-demo">
+      <div class="fc-card" style="width:180px;">Base card</div>
+      <div class="fc-card fc-card--featured" style="width:180px;">Featured</div>
+      <div class="fc-card fc-card--interactive" style="width:180px;" tabindex="0" role="button">Interactive</div>
+    </div>
+    <div class="sg-code">&lt;div class="fc-card"&gt;...&lt;/div&gt;
+&lt;div class="fc-card fc-card--featured"&gt;...&lt;/div&gt;
+
+&lt;!-- Only if the entire card is one clickable target --&gt;
+&lt;div class="fc-card fc-card--interactive" tabindex="0" role="button"&gt;...&lt;/div&gt;</div>
+  </div>
+
+  <div class="sg-section">
+    <h2>Form field</h2>
+    <p class="sg-desc">Label, input, and an optional hint or error. The error state pairs <code>aria-invalid</code> on the input with <code>role="alert"</code> on the message so screen readers announce it immediately.</p>
+    <div class="sg-demo" style="display:block; max-width:320px;">
+      <div class="fc-field">
+        <label class="fc-field__label" for="sg-email">Email</label>
+        <input class="fc-field__input" id="sg-email" type="email" placeholder="you@example.com">
+        <p class="fc-field__hint">We'll only use this to contact you.</p>
+      </div>
+      <div class="fc-field fc-field--error">
+        <label class="fc-field__label" for="sg-email-err">Email</label>
+        <input class="fc-field__input" id="sg-email-err" type="email" aria-invalid="true" aria-describedby="sg-email-err-msg" value="not-an-email">
+        <p class="fc-field__error" id="sg-email-err-msg" role="alert">Enter a valid email address.</p>
+      </div>
+    </div>
+    <div class="sg-code">&lt;div class="fc-field fc-field--error"&gt;
+  &lt;label class="fc-field__label" for="email"&gt;Email&lt;/label&gt;
+  &lt;input class="fc-field__input" id="email" type="email"
+         aria-invalid="true" aria-describedby="email-err"&gt;
+  &lt;p class="fc-field__error" id="email-err" role="alert"&gt;
+    Enter a valid email address.
+  &lt;/p&gt;
+&lt;/div&gt;</div>
+  </div>
+
+  <div class="sg-section">
+    <h2>Alert</h2>
+    <p class="sg-desc">Use <code>role="status"</code> for calm updates, <code>role="alert"</code> only for something that needs immediate attention — overusing <code>role="alert"</code> makes screen readers interrupt constantly.</p>
+    <div class="sg-demo" style="display:block;">
+      <div class="fc-alert fc-alert--success" role="status" style="margin-bottom:10px;">Your form is protected.</div>
+      <div class="fc-alert fc-alert--error" role="alert" style="margin-bottom:10px;">Couldn't save — check your connection.</div>
+      <div class="fc-alert fc-alert--info" role="status">Free plan includes up to 200 submissions/month.</div>
+    </div>
+    <div class="sg-code">&lt;div class="fc-alert fc-alert--error" role="alert"&gt;
+  Couldn't save — check your connection.
+&lt;/div&gt;</div>
+  </div>
+
+  <div class="sg-section">
+    <h2>Skeleton (loading)</h2>
+    <p class="sg-desc">Placeholder shapes shown while real content is being fetched. Always mark the containing region <code>aria-busy="true"</code> and give screen reader users a text alternative — a shimmering box alone tells them nothing.</p>
+    <div class="sg-demo" style="display:block;" aria-busy="true">
+      <span class="fc-sr-only">Loading recent activity…</span>
+      <div class="fc-skeleton" style="width:70%; height:14px; margin-bottom:10px;"></div>
+      <div class="fc-skeleton" style="width:45%; height:14px; margin-bottom:10px;"></div>
+      <div class="fc-skeleton" style="width:60%; height:14px;"></div>
+    </div>
+    <div class="sg-code">&lt;div aria-busy="true"&gt;
+  &lt;span class="fc-sr-only"&gt;Loading recent activity…&lt;/span&gt;
+  &lt;div class="fc-skeleton" style="width:70%; height:14px;"&gt;&lt;/div&gt;
+&lt;/div&gt;</div>
+  </div>
+
+  <div class="sg-section">
+    <h2>Empty state</h2>
+    <p class="sg-desc">Shown when a list has genuinely nothing in it yet — not the same as loading. Tell the person what will appear here and, if possible, what to do about it.</p>
+    <div class="sg-demo">
+      <div class="fc-empty" style="width:100%;">
+        <p class="fc-empty__title">No submissions yet</p>
+        <p class="fc-empty__body">Once your form goes live, activity will show up here.</p>
+      </div>
+    </div>
+    <div class="sg-code">&lt;div class="fc-empty"&gt;
+  &lt;p class="fc-empty__title"&gt;No submissions yet&lt;/p&gt;
+  &lt;p class="fc-empty__body"&gt;Once your form goes live, activity will show up here.&lt;/p&gt;
+&lt;/div&gt;</div>
+  </div>
+
+  <div class="sg-section">
+    <h2>Best practices used throughout</h2>
+    <ul style="color: var(--fc-ink-soft); font-size: 14px; line-height: 2;">
+      <li>Every interactive element has a visible <code>:focus-visible</code> state — required for keyboard-only users.</li>
+      <li>Color is never the only signal — badges and alerts pair color with text, not color alone.</li>
+      <li>All animation respects <code>prefers-reduced-motion</code>.</li>
+      <li>Loading and empty states are distinct — a skeleton means "fetching," an empty state means "fetched, nothing there."</li>
+      <li>One spacing scale (4px steps) and one radius scale are reused everywhere — no one-off pixel values.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
