@@ -6,6 +6,7 @@
 <title>Formcatch — Spam filter for contact forms</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="components.css">
 <style>
   :root {
     --bg: #EEF1EF;
@@ -178,7 +179,8 @@
   @keyframes fadeIn { to { opacity: 1; } }
 
   /* SECTIONS */
-  .section { padding: 84px 0; }
+  .section { padding: 84px 0; scroll-margin-top: 24px; }
+  #install, #pricing, #how { scroll-margin-top: 24px; }
   .section-label {
     font-family: var(--font-mono);
     font-size: 11.5px;
@@ -304,7 +306,7 @@
     <a href="#install">Install</a>
     <a href="#pricing">Pricing</a>
   </div>
-  <a href="#pricing" class="nav-cta">Get started</a>
+  <a href="#pricing" class="fc-btn fc-btn--primary fc-btn--sm">Get started</a>
 </nav>
 
 <header class="hero">
@@ -313,25 +315,37 @@
       <h1>Stop reading spam.<br><span class="dim">Keep reading customers.</span></h1>
       <p class="lede">Formcatch sits in front of any contact form and filters out bots before they reach your inbox. No CAPTCHA, no friction for real people.</p>
       <div class="hero-actions">
-        <a href="#install" class="btn-primary">Add to your site — free</a>
-        <a href="#how" class="btn-secondary">See how it works</a>
+        <a href="#install" class="fc-btn fc-btn--primary">Add to your site — free</a>
+        <a href="#how" class="fc-btn fc-btn--ghost">See how it works</a>
       </div>
       <div class="hero-note">One script tag. No account required to try it.</div>
     </div>
 
-    <div class="dashboard">
+    <div class="dashboard fc-card">
       <div class="tally-row">
         <div class="tally">
-          <div class="tally-label">Delivered today</div>
-          <div class="tally-value teal" id="tally-pass">0</div>
+          <div class="tally-label">Example site — delivered</div>
+          <div class="tally-value teal" id="tally-pass" aria-live="polite">0</div>
         </div>
         <div class="tally">
-          <div class="tally-label">Blocked today</div>
-          <div class="tally-value amber" id="tally-catch">0</div>
+          <div class="tally-label">Example site — blocked</div>
+          <div class="tally-value amber" id="tally-catch" aria-live="polite">0</div>
         </div>
       </div>
-      <div class="feed-label">Recent activity</div>
-      <div class="feed" id="log"></div>
+      <div class="feed-label">Recent activity <span style="opacity:0.6; text-transform:none; letter-spacing:0;">— sample data, for illustration</span></div>
+      <div class="feed" id="feed-region" aria-busy="true">
+        <span class="fc-sr-only" id="feed-status">Loading recent activity…</span>
+        <div id="feed-skeleton">
+          <div class="fc-skeleton" style="width:85%; height:14px; margin:10px 0;"></div>
+          <div class="fc-skeleton" style="width:60%; height:14px; margin:10px 0;"></div>
+          <div class="fc-skeleton" style="width:72%; height:14px; margin:10px 0;"></div>
+        </div>
+        <div class="fc-empty" id="feed-empty" hidden>
+          <p class="fc-empty__title">No submissions yet</p>
+          <p class="fc-empty__body">Once your form goes live, activity will show up here.</p>
+        </div>
+        <div id="log"></div>
+      </div>
     </div>
   </div>
 </header>
@@ -344,18 +358,18 @@
       <p>Each one catches a different kind of bot, run in order — cheapest first, so most spam never gets past step one.</p>
     </div>
     <div class="checks">
-      <div class="check">
-        <div class="check-tag">CHECK 1</div>
+      <div class="check fc-card">
+        <span class="fc-badge fc-badge--teal">CHECK 1</span>
         <h3>Honeypot field</h3>
         <p>An invisible field is added to your form. Real visitors never see it. Bots that auto-fill every field trip it instantly.</p>
       </div>
-      <div class="check">
-        <div class="check-tag">CHECK 2</div>
+      <div class="check fc-card">
+        <span class="fc-badge fc-badge--teal">CHECK 2</span>
         <h3>Timing check</h3>
         <p>The gap between page load and submit is measured. Scripted submissions land in milliseconds — no person types that fast.</p>
       </div>
-      <div class="check">
-        <div class="check-tag">CHECK 3</div>
+      <div class="check fc-card">
+        <span class="fc-badge fc-badge--teal">CHECK 3</span>
         <h3>Rate limiting</h3>
         <p>Repeated bursts from the same source get throttled automatically, before they become a flood.</p>
       </div>
@@ -390,7 +404,7 @@
       <p>Priced per site, not per submission — spam volume shouldn't set your bill.</p>
     </div>
     <div class="pricing-grid">
-      <div class="plan">
+      <div class="plan fc-card">
         <div class="plan-name">FREE</div>
         <div class="plan-price">$0</div>
         <div class="plan-desc">One site, forever</div>
@@ -399,9 +413,9 @@
           <li>All 3 checks</li>
           <li>Email support</li>
         </ul>
-        <a href="#" class="plan-cta">Start free</a>
+        <a href="#install" class="plan-cta fc-btn fc-btn--secondary">Get the free script</a>
       </div>
-      <div class="plan featured">
+      <div class="plan featured fc-card fc-card--featured">
         <div class="plan-name">STARTER</div>
         <div class="plan-price">$9<span>/mo</span></div>
         <div class="plan-desc">1 site, unlimited volume</div>
@@ -410,9 +424,9 @@
           <li>Activity dashboard</li>
           <li>Email alerts</li>
         </ul>
-        <a href="#" class="plan-cta">Choose Starter</a>
+        <a href="mailto:YOUR-EMAIL-HERE@example.com?subject=Formcatch%20Starter%20plan&body=I'd%20like%20the%20Starter%20plan%20($9/mo)%20when%20it's%20available." class="plan-cta fc-btn fc-btn--secondary">Join waitlist</a>
       </div>
-      <div class="plan">
+      <div class="plan fc-card">
         <div class="plan-name">TEAM</div>
         <div class="plan-price">$29<span>/mo</span></div>
         <div class="plan-desc">5 sites</div>
@@ -421,9 +435,9 @@
           <li>Slack notifications</li>
           <li>Custom rules</li>
         </ul>
-        <a href="#" class="plan-cta">Choose Team</a>
+        <a href="mailto:YOUR-EMAIL-HERE@example.com?subject=Formcatch%20Team%20plan&body=I'd%20like%20the%20Team%20plan%20($29/mo)%20when%20it's%20available." class="plan-cta fc-btn fc-btn--secondary">Join waitlist</a>
       </div>
-      <div class="plan">
+      <div class="plan fc-card">
         <div class="plan-name">AGENCY</div>
         <div class="plan-price">$79<span>/mo</span></div>
         <div class="plan-desc">25 client sites</div>
@@ -432,7 +446,7 @@
           <li>White-label reports</li>
           <li>Priority support</li>
         </ul>
-        <a href="#" class="plan-cta">Choose Agency</a>
+        <a href="mailto:YOUR-EMAIL-HERE@example.com?subject=Formcatch%20Agency%20plan&body=I'd%20like%20the%20Agency%20plan%20($79/mo)%20when%20it's%20available." class="plan-cta fc-btn fc-btn--secondary">Join waitlist</a>
       </div>
     </div>
   </div>
@@ -455,13 +469,29 @@
   ];
 
   const logEl = document.getElementById('log');
+  const feedRegion = document.getElementById('feed-region');
+  const feedSkeleton = document.getElementById('feed-skeleton');
+  const feedEmpty = document.getElementById('feed-empty');
+  const feedStatus = document.getElementById('feed-status');
   const passEl = document.getElementById('tally-pass');
   const catchEl = document.getElementById('tally-catch');
-  let i = 0, passCount = 214, catchCount = 38;
+  let i = 0, passCount = 214, catchCount = 38, started = false;
   passEl.textContent = passCount;
   catchEl.textContent = catchCount;
 
+  function startFeed() {
+    feedSkeleton.remove();
+    feedRegion.removeAttribute('aria-busy');
+    if (events.length === 0) {
+      feedEmpty.hidden = false;
+      feedStatus.textContent = 'No submissions yet.';
+      return;
+    }
+    feedStatus.textContent = 'Recent activity loaded.';
+  }
+
   function tick() {
+    if (!started) { startFeed(); started = true; }
     const e = events[i % events.length];
     const row = document.createElement('div');
     row.className = 'row';
