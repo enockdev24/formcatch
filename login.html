@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in — Formcatch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="components.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body {
+    background: #0B0B09; color: #EDEAE1; font-family: 'Inter', sans-serif;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; padding: 24px;
+  }
+  .box { max-width: 380px; width: 100%; }
+  .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; margin-bottom: 34px; display:flex; align-items:center; gap:9px; }
+  .logo-mark { width: 9px; height: 9px; background: #2FD9B8; border-radius: 2px; }
+  h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 24px; margin-bottom: 8px; }
+  p.sub { color: #9C9686; font-size: 14px; margin-bottom: 28px; }
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo"><span class="logo-mark"></span>Formcatch</div>
+  <h1>Sign in</h1>
+  <p class="sub">Enter your email — we'll send a link, no password needed.</p>
+
+  <div class="fc-field" id="form-state">
+    <label class="fc-field__label" for="email">Email</label>
+    <input class="fc-field__input" id="email" type="email" placeholder="you@example.com" autocomplete="email">
+  </div>
+  <button class="fc-btn fc-btn--primary" id="send-btn" style="width:100%; background:#2FD9B8; color:#0B0B09;">
+    Send sign-in link
+  </button>
+  <div id="message" role="status" style="margin-top:16px; font-size:13.5px;"></div>
+</div>
+
+<script>
+  // ---- CONFIG: paste your own Supabase project values here ----
+  // Find these in: Supabase dashboard → your project → Settings → API
+  const SUPABASE_URL = 'YOUR-SUPABASE-URL-HERE';       // e.g. https://xxxxx.supabase.co
+  const SUPABASE_ANON_KEY = 'YOUR-SUPABASE-ANON-KEY-HERE'; // the "anon public" key — safe to expose in client code
+  // ----------------------------------------------------------------
+
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const btn = document.getElementById('send-btn');
+  const emailInput = document.getElementById('email');
+  const message = document.getElementById('message');
+
+  btn.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    if (!email || !email.includes('@')) {
+      message.textContent = 'Enter a valid email address.';
+      message.style.color = '#E08A6E';
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.origin + '/dashboard.html' }
+    });
+    btn.disabled = false;
+    btn.textContent = 'Send sign-in link';
+    if (error) {
+      message.textContent = 'Something went wrong: ' + error.message;
+      message.style.color = '#E08A6E';
+    } else {
+      message.textContent = 'Check your email for a sign-in link.';
+      message.style.color = '#2FD9B8';
+    }
+  });
+</script>
+</body>
+</html>

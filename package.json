@@ -1,5 +1,8 @@
 {
   "name": "formcatch",
   "version": "1.0.0",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  }
 }

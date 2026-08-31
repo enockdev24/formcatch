@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Formcatch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="components.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body { background: #0B0B09; color: #EDEAE1; font-family: 'Inter', sans-serif; margin: 0; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 40px 24px 80px; }
+  .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+  .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 19px; display:flex; align-items:center; gap:9px; }
+  .logo-mark { width: 9px; height: 9px; background: #2FD9B8; border-radius: 2px; }
+  h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 26px; margin-bottom: 4px; }
+  .plan-pill {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; text-transform: uppercase;
+    background: rgba(47,217,184,0.13); color: #2FD9B8; padding: 4px 10px; border-radius: 4px;
+    display: inline-block; margin-bottom: 28px;
+  }
+  .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+  .snippet-box { margin-bottom: 32px; }
+  .snippet-box h3 { font-family: 'Fraunces', serif; font-size: 16px; margin-bottom: 10px; }
+  .code {
+    background: #17160F; border: 1px solid rgba(237,234,225,0.11); border-radius: 8px;
+    padding: 18px 20px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #D8CDB0;
+    overflow-x: auto; white-space: pre;
+  }
+  .activity h3 { font-family: 'Fraunces', serif; font-size: 16px; margin-bottom: 14px; }
+  .arow {
+    display: flex; justify-content: space-between; padding: 10px 0;
+    border-top: 1px solid rgba(237,234,225,0.11); font-size: 13px;
+  }
+  .arow:first-child { border-top: none; }
+  .arow .dim { color: #9C9686; }
+  #app-loading, #app-signed-out { text-align: center; padding: 80px 0; color: #9C9686; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top">
+    <div class="logo"><span class="logo-mark"></span>Formcatch</div>
+    <button class="fc-btn fc-btn--secondary fc-btn--sm" id="signout-btn" style="background:transparent; border-color:rgba(237,234,225,0.22); color:#EDEAE1;" hidden>Sign out</button>
+  </div>
+
+  <div id="app-loading">Loading your dashboard…</div>
+
+  <div id="app-signed-out" hidden>
+    <p>You're not signed in. <a href="login.html" style="color:#2FD9B8;">Go to sign in →</a></p>
+  </div>
+
+  <div id="app-content" hidden>
+    <h1>Your site</h1>
+    <div class="plan-pill" id="plan-label">FREE PLAN</div>
+
+    <div class="stat-row">
+      <div class="fc-card" style="background:#17160F; border-color:rgba(237,234,225,0.11);">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9C9686; text-transform:uppercase; margin-bottom:8px;">Delivered</div>
+        <div style="font-family:'Fraunces',serif; font-style:italic; font-size:32px; color:#2FD9B8;" id="stat-delivered">—</div>
+      </div>
+      <div class="fc-card" style="background:#17160F; border-color:rgba(237,234,225,0.11);">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9C9686; text-transform:uppercase; margin-bottom:8px;">Blocked</div>
+        <div style="font-family:'Fraunces',serif; font-style:italic; font-size:32px;" id="stat-blocked">—</div>
+      </div>
+    </div>
+
+    <div id="limit-alert" hidden class="fc-alert fc-alert--error" role="alert" style="margin-bottom:28px;"></div>
+
+    <div class="snippet-box">
+      <h3>Your install snippet</h3>
+      <div class="code" id="snippet-code">Loading…</div>
+    </div>
+
+    <div class="activity">
+      <h3>Recent activity</h3>
+      <div id="activity-empty" class="fc-empty" hidden style="color:#9C9686;">
+        <p class="fc-empty__title" style="color:#EDEAE1;">No submissions yet</p>
+        <p class="fc-empty__body">Once your form goes live with the snippet above, activity shows up here.</p>
+      </div>
+      <div id="activity-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---- CONFIG: same values as login.html ----
+  const SUPABASE_URL = 'YOUR-SUPABASE-URL-HERE';
+  const SUPABASE_ANON_KEY = 'YOUR-SUPABASE-ANON-KEY-HERE';
+  // ---------------------------------------------
+
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const loadingEl = document.getElementById('app-loading');
+  const signedOutEl = document.getElementById('app-signed-out');
+  const contentEl = document.getElementById('app-content');
+  const signoutBtn = document.getElementById('signout-btn');
+
+  async function init() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      loadingEl.hidden = true;
+      signedOutEl.hidden = false;
+      return;
+    }
+
+    signoutBtn.hidden = false;
+    signoutBtn.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = 'login.html';
+    });
+
+    try {
+      const res = await fetch('/api/dashboard-data', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + session.access_token }
+      });
+      if (!res.ok) throw new Error('Request failed');
+      const data = await res.json();
+      render(data);
+    } catch (e) {
+      loadingEl.textContent = 'Could not load your dashboard. Try refreshing.';
+      return;
+    }
+
+    loadingEl.hidden = true;
+    contentEl.hidden = false;
+  }
+
+  function render(data) {
+    document.getElementById('plan-label').textContent = data.plan.toUpperCase() + ' PLAN';
+    document.getElementById('stat-delivered').textContent = data.delivered_total;
+    document.getElementById('stat-blocked').textContent = data.blocked_total;
+
+    if (data.limit !== Infinity && data.submissions_this_month >= data.limit) {
+      const alertEl = document.getElementById('limit-alert');
+      alertEl.hidden = false;
+      alertEl.textContent = `You've reached your free-plan limit of ${data.limit} submissions this month. New submissions won't be filtered until next month, or until you upgrade.`;
+    }
+
+    document.getElementById('snippet-code').textContent =
+`<script src="https://cdn.formcatch.dev/v1.js" data-site="${data.site_id}"></` + `script>
+
+<form data-formcatch action="/submit">
+  ...
+</form>`;
+
+    const list = document.getElementById('activity-list');
+    if (data.recent.length === 0) {
+      document.getElementById('activity-empty').hidden = false;
+      return;
+    }
+    data.recent.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'arow';
+      const label = item.status === 'pass' ? 'Delivered' : `Blocked — ${item.reason || 'filtered'}`;
+      const time = new Date(item.created_at).toLocaleString();
+      row.innerHTML = `<span>${label}</span><span class="dim">${time}</span>`;
+      list.appendChild(row);
+    });
+  }
+
+  init();
+</script>
+</body>
+</html>
