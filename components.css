@@ -126,10 +126,8 @@
 .fc-btn--ghost {
   background: transparent;
   color: var(--fc-ink-soft);
-  padding-left: 4px;
-  padding-right: 4px;
-  border-bottom: 1px solid var(--fc-line-strong);
-  border-radius: 0;
+  border: 1px solid var(--fc-line-strong);
+  border-radius: var(--fc-radius-md);
 }
 .fc-btn--ghost:hover { color: var(--fc-ink); border-color: var(--fc-ink-soft); }
 
