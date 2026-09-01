@@ -84,9 +84,9 @@
     'maildrop.cc', 'fakeinbox.com', 'dispostable.com', 'mintemail.com'
   ];
 
-  let supabase;
+  let supabaseClient;
   try {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   } catch (e) {
     document.getElementById('status-box').textContent =
       'Setup issue: this page isn\'t connected to a database yet.';
@@ -149,7 +149,7 @@
     btn.textContent = 'Sending…';
     statusBox.classList.remove('show', 'success', 'error');
 
-    const { error: sendError } = await supabase.auth.signInWithOtp({
+    const { error: sendError } = await supabaseClient.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: window.location.origin + '/dashboard.html' }
     });
