@@ -92,7 +92,7 @@
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloamhxaWh0c2JidWVnZHFoY2lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNzI5NDYsImV4cCI6MjEwMzc0ODk0Nn0.VXPXFm9X5_SQc_KbGPTFmIaGcxBP62gc-Q3c4Xry4Mk';
   // ---------------------------------------------
 
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const loadingEl = document.getElementById('app-loading');
   const signedOutEl = document.getElementById('app-signed-out');
@@ -100,7 +100,7 @@
   const signoutBtn = document.getElementById('signout-btn');
 
   async function init() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) {
       loadingEl.hidden = true;
       signedOutEl.hidden = false;
@@ -109,7 +109,7 @@
 
     signoutBtn.hidden = false;
     signoutBtn.addEventListener('click', async () => {
-      await supabase.auth.signOut();
+      await supabaseClient.auth.signOut();
       window.location.href = 'login.html';
     });
 
