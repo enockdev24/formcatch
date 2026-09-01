@@ -18,6 +18,34 @@
   .logo-mark { width: 9px; height: 9px; background: #2FD9B8; border-radius: 2px; }
   h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 24px; margin-bottom: 8px; }
   p.sub { color: #9C9686; font-size: 14px; margin-bottom: 28px; }
+
+  .fc-field__label { color: #EDEAE1; }
+  .fc-field__input {
+    background: #17160F; border-color: rgba(237,234,225,0.22); color: #EDEAE1;
+  }
+  .fc-field__input::placeholder { color: #6B6558; }
+  .fc-field__hint { color: #6B6558; }
+  .fc-field--error .fc-field__input { border-color: #E08A6E; }
+  .fc-field__error { color: #E08A6E; }
+  .fc-field--ok .fc-field__input { border-color: #2FD9B8; }
+
+  #send-btn { width: 100%; background: #2FD9B8; color: #0B0B09; }
+  #send-btn:disabled { background: #1D3B35; color: #6B6558; cursor: not-allowed; opacity: 1; }
+
+  .status-box {
+    margin-top: 16px; font-size: 13.5px; padding: 12px 14px; border-radius: 8px; display: none;
+  }
+  .status-box.show { display: block; }
+  .status-box.success { background: rgba(47,217,184,0.12); color: #2FD9B8; }
+  .status-box.error { background: rgba(224,138,110,0.12); color: #E08A6E; }
+
+  .resend-line { margin-top: 12px; font-size: 12.5px; color: #6B6558; display: none; }
+  .resend-line.show { display: block; }
+  .resend-line button {
+    background: none; border: none; color: #2FD9B8; font-size: 12.5px; font-weight: 600;
+    cursor: pointer; padding: 0; text-decoration: underline;
+  }
+  .resend-line button:disabled { color: #6B6558; cursor: not-allowed; text-decoration: none; }
 </style>
 </head>
 <body>
@@ -26,50 +54,143 @@
   <h1>Sign in</h1>
   <p class="sub">Enter your email — we'll send a link, no password needed.</p>
 
-  <div class="fc-field" id="form-state">
+  <div class="fc-field" id="field-wrap">
     <label class="fc-field__label" for="email">Email</label>
     <input class="fc-field__input" id="email" type="email" placeholder="you@example.com" autocomplete="email">
+    <p class="fc-field__error" id="field-error" role="alert" style="display:none;"></p>
   </div>
-  <button class="fc-btn fc-btn--primary" id="send-btn" style="width:100%; background:#2FD9B8; color:#0B0B09;">
-    Send sign-in link
-  </button>
-  <div id="message" role="status" style="margin-top:16px; font-size:13.5px;"></div>
+
+  <button class="fc-btn fc-btn--primary" id="send-btn">Send sign-in link</button>
+
+  <div class="status-box" id="status-box" role="status"></div>
+  <div class="resend-line" id="resend-line">
+    Didn't get it? <button id="resend-btn" type="button">Send again</button>
+    <span id="resend-timer"></span>
+  </div>
 </div>
 
 <script>
   // ---- CONFIG: paste your own Supabase project values here ----
-  // Find these in: Supabase dashboard → your project → Settings → API
-  const SUPABASE_URL = 'https://ihjhqihtsbbuegdqhciq.supabase.co/rest/v1/';       // e.g. https://xxxxx.supabase.co
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloamhxaWh0c2JidWVnZHFoY2lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNzI5NDYsImV4cCI6MjEwMzc0ODk0Nn0.VXPXFm9X5_SQc_KbGPTFmIaGcxBP62gc-Q3c4Xry4Mk'; // the "anon public" key — safe to expose in client code
+  const SUPABASE_URL = 'https://ihjhqihtsbbuegdqhciq.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloamhxaWh0c2JidWVnZHFoY2lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNzI5NDYsImV4cCI6MjEwMzc0ODk0Nn0.VXPXFm9X5_SQc_KbGPTFmIaGcxBP62gc-Q3c4Xry4Mk';
   // ----------------------------------------------------------------
 
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  const btn = document.getElementById('send-btn');
-  const emailInput = document.getElementById('email');
-  const message = document.getElementById('message');
+  // Common disposable/temp-mail domains. Not exhaustive — a determined
+  // person can always find a new one — but it filters the obvious cases.
+  const DISPOSABLE_DOMAINS = [
+    'mailinator.com', 'tempmail.com', 'temp-mail.org', 'guerrillamail.com',
+    'guerrillamail.info', '10minutemail.com', '10minutemail.net', 'yopmail.com',
+    'throwawaymail.com', 'getnada.com', 'trashmail.com', 'sharklasers.com',
+    'maildrop.cc', 'fakeinbox.com', 'dispostable.com', 'mintemail.com'
+  ];
 
-  btn.addEventListener('click', async () => {
+  let supabase;
+  try {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch (e) {
+    document.getElementById('status-box').textContent =
+      'Setup issue: this page isn\'t connected to a database yet.';
+    document.getElementById('status-box').classList.add('show', 'error');
+    document.getElementById('send-btn').disabled = true;
+  }
+
+  const emailInput = document.getElementById('email');
+  const fieldWrap = document.getElementById('field-wrap');
+  const fieldError = document.getElementById('field-error');
+  const btn = document.getElementById('send-btn');
+  const statusBox = document.getElementById('status-box');
+  const resendLine = document.getElementById('resend-line');
+  const resendBtn = document.getElementById('resend-btn');
+  const resendTimer = document.getElementById('resend-timer');
+
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  let cooldownInterval = null;
+
+  function validate(email) {
+    if (!email) return null; // no message while empty — don't scold before they've typed
+    if (!EMAIL_RE.test(email)) return 'That doesn\'t look like a complete email address.';
+    const domain = email.split('@')[1]?.toLowerCase();
+    if (DISPOSABLE_DOMAINS.includes(domain)) {
+      return 'Temporary/disposable email addresses aren\'t supported — use one you can actually check.';
+    }
+    return null;
+  }
+
+  emailInput.addEventListener('input', () => {
+    const error = validate(emailInput.value.trim());
+    fieldWrap.classList.remove('fc-field--error', 'fc-field--ok');
+    if (error) {
+      fieldWrap.classList.add('fc-field--error');
+      fieldError.textContent = error;
+      fieldError.style.display = 'block';
+    } else {
+      fieldError.style.display = 'none';
+      if (emailInput.value.trim()) fieldWrap.classList.add('fc-field--ok');
+    }
+  });
+
+  async function sendLink() {
     const email = emailInput.value.trim();
-    if (!email || !email.includes('@')) {
-      message.textContent = 'Enter a valid email address.';
-      message.style.color = '#E08A6E';
+    const error = validate(email);
+    if (!email) {
+      fieldWrap.classList.add('fc-field--error');
+      fieldError.textContent = 'Enter your email address.';
+      fieldError.style.display = 'block';
       return;
     }
+    if (error) {
+      fieldWrap.classList.add('fc-field--error');
+      fieldError.textContent = error;
+      fieldError.style.display = 'block';
+      return;
+    }
+
     btn.disabled = true;
     btn.textContent = 'Sending…';
-    const { error } = await supabase.auth.signInWithOtp({
+    statusBox.classList.remove('show', 'success', 'error');
+
+    const { error: sendError } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: window.location.origin + '/dashboard.html' }
     });
+
+    if (sendError) {
+      btn.disabled = false;
+      btn.textContent = 'Send sign-in link';
+      statusBox.textContent = 'Something went wrong: ' + sendError.message;
+      statusBox.classList.add('show', 'error');
+      return;
+    }
+
+    btn.textContent = 'Link sent ✓';
+    statusBox.textContent = 'Check your email for a sign-in link — it may take a minute to arrive.';
+    statusBox.classList.add('show', 'success');
+    startCooldown(60);
+  }
+
+  function startCooldown(seconds) {
+    resendLine.classList.add('show');
+    resendBtn.disabled = true;
+    let remaining = seconds;
+    resendTimer.textContent = ` (available in ${remaining}s)`;
+    clearInterval(cooldownInterval);
+    cooldownInterval = setInterval(() => {
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(cooldownInterval);
+        resendBtn.disabled = false;
+        resendTimer.textContent = '';
+      } else {
+        resendTimer.textContent = ` (available in ${remaining}s)`;
+      }
+    }, 1000);
+  }
+
+  btn.addEventListener('click', sendLink);
+  resendBtn.addEventListener('click', () => {
     btn.disabled = false;
     btn.textContent = 'Send sign-in link';
-    if (error) {
-      message.textContent = 'Something went wrong: ' + error.message;
-      message.style.color = '#E08A6E';
-    } else {
-      message.textContent = 'Check your email for a sign-in link.';
-      message.style.color = '#2FD9B8';
-    }
+    sendLink();
   });
 </script>
 </body>
