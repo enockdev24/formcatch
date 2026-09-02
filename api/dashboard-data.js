@@ -38,7 +38,8 @@ export default async function handler(req, res) {
   // Verify the token actually belongs to a real logged-in user.
   const { data: userData, error: userError } = await admin.auth.getUser(token);
   if (userError || !userData?.user) {
-    return res.status(401).json({ error: 'Invalid session' });
+    console.error('[dashboard-data] auth.getUser failed:', userError?.message || 'no user returned', '— SUPABASE_URL set:', !!SUPABASE_URL, '— SERVICE_ROLE_KEY set:', !!SERVICE_ROLE_KEY);
+    return res.status(401).json({ error: 'Invalid session', detail: userError?.message || null });
   }
   const userId = userData.user.id;
 
