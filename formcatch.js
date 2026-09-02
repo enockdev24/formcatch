@@ -3,7 +3,7 @@
  *
  * Usage:
  *   <script src="formcatch.js" data-site="your-site-id"></script>
- *   <form data-formcatch action="/submit">...</form>
+ *   <form data-formcatch method="POST" action="/api/submit">...</form>
  *
  * What it does:
  *   1. Injects a hidden honeypot field into every form marked [data-formcatch].
