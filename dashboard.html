@@ -83,8 +83,37 @@
       </div>
       <div id="activity-list"></div>
     </div>
+
+    <div class="upgrade" id="upgrade-section" style="margin-top:40px; padding-top:32px; border-top:1px solid rgba(237,234,225,0.11);">
+      <h3 style="font-family:'Fraunces',serif; font-size:16px; margin-bottom:6px;">Upgrade your plan</h3>
+      <p style="color:#9C9686; font-size:13px; margin-bottom:4px;" id="sandbox-notice">
+        ⚠ Sandbox mode — no real charges. This is for testing only until switched to live.
+      </p>
+      <p style="color:#9C9686; font-size:13px; margin-bottom:20px;" id="already-paid-notice" hidden>
+        You're already on a paid plan.
+      </p>
+      <div id="paypal-buttons-wrap" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; max-width:600px;">
+        <div>
+          <p style="font-size:13px; color:#9C9686; margin-bottom:8px;">Starter — $3/mo</p>
+          <div id="paypal-button-starter"></div>
+        </div>
+        <div>
+          <p style="font-size:13px; color:#9C9686; margin-bottom:8px;">Team — $10/mo</p>
+          <div id="paypal-button-team"></div>
+        </div>
+        <div>
+          <p style="font-size:13px; color:#9C9686; margin-bottom:8px;">Agency — $30/mo</p>
+          <div id="paypal-button-agency"></div>
+        </div>
+      </div>
+      <div id="upgrade-status" role="status" style="margin-top:16px; font-size:13.5px;"></div>
+    </div>
   </div>
 </div>
+
+<!-- SANDBOX client ID by default. Do not switch to a live client ID
+     until a full test subscription has worked in sandbox. -->
+<script src="https://www.paypal.com/sdk/js?client-id=AT8vGX-VlWqr0UWHlOfOGspugkgWgyZ9mbLY5STgXEHnNRLHEHe7BVwvL-lxDLbyYISquHBb7ysS4sGW&vault=true&intent=subscription"></script>
 
 <script>
   // ---- CONFIG: same values as login.html ----
@@ -132,6 +161,7 @@
 
   function render(data) {
     document.getElementById('plan-label').textContent = data.plan.toUpperCase() + ' PLAN';
+    setupUpgradeButtons(data.site_id, data.plan);
     document.getElementById('stat-delivered').textContent = data.delivered_total;
     document.getElementById('stat-blocked').textContent = data.blocked_total;
 
@@ -164,6 +194,54 @@
   }
 
   init();
+
+  // ---- PayPal Plan IDs: paste your real ones here once created ----
+  const PAYPAL_PLANS = {
+    starter: 'P-2NN27153MY454512FNKO3EOY',
+    team: 'P-6MX56798ET963304BNKO3MIA',
+    agency: 'P-4RU51372HT4295802NKO3NAQ',
+  };
+  // -------------------------------------------------------------------
+
+  function setupUpgradeButtons(siteId, currentPlan) {
+    if (currentPlan !== 'free') {
+      document.getElementById('paypal-buttons-wrap').hidden = true;
+      document.getElementById('sandbox-notice').hidden = true;
+      document.getElementById('already-paid-notice').hidden = false;
+      return;
+    }
+    if (typeof paypal === 'undefined') {
+      document.getElementById('upgrade-status').textContent = 'PayPal is still loading — try refreshing in a moment.';
+      return;
+    }
+
+    const statusEl = document.getElementById('upgrade-status');
+
+    function renderButton(containerId, planId, planLabel) {
+      paypal.Buttons({
+        style: { label: 'subscribe' },
+        createSubscription: function (data, actions) {
+          return actions.subscription.create({
+            plan_id: planId,
+            custom_id: siteId, // this is how the webhook knows WHICH site to upgrade
+          });
+        },
+        onApprove: function (data) {
+          statusEl.style.color = '#2FD9B8';
+          statusEl.textContent = `Subscribed to ${planLabel} — activating shortly. Refresh in a minute to see your new plan.`;
+        },
+        onError: function (err) {
+          statusEl.style.color = '#E08A6E';
+          statusEl.textContent = 'Something went wrong with the subscription. Nothing was charged.';
+          console.error('[paypal]', err);
+        },
+      }).render('#' + containerId);
+    }
+
+    renderButton('paypal-button-starter', PAYPAL_PLANS.starter, 'Starter');
+    renderButton('paypal-button-team', PAYPAL_PLANS.team, 'Team');
+    renderButton('paypal-button-agency', PAYPAL_PLANS.agency, 'Agency');
+  }
 </script>
 </body>
 </html>
